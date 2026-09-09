@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: neighborlink
+      POSTGRES_USER: neighborlink
+      POSTGRES_PASSWORD: neighborlink
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neighborlink -d neighborlink"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - neighborlink_postgres:/var/lib/postgresql/data
+
+volumes:
+  neighborlink_postgres:
