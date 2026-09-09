@@ -1,0 +1,13 @@
+display_name,email,phone_e164,skills,available,email_consent,whatsapp_consent
+Amina N.,amina@neighborlink.test,+237690000001,accueil|premiers secours,true,true,false
+Boris E.,boris@neighborlink.test,+237690000002,logistique|conduite,true,true,true
+Carine M.,adresse-invalide,+237690000003,distribution|accueil,true,true,false
+David T.,david@neighborlink.test,+237690000004,,true,true,false
+Estelle K.,estelle@neighborlink.test,+237690000005,premiers secours,false,true,true
+Fabrice O.,fabrice@neighborlink.test,+237690000006,distribution,true,true,false
+Grace B.,grace@neighborlink.test,+237690000007,accueil,true,true,true
+Hervé L.,herve@neighborlink.test,+237690000008,conduite|logistique,true,true,false
+Inès S.,ines@neighborlink.test,+237690000009,distribution|premiers secours,true,true,true
+Junior P.,junior@neighborlink.test,+237690000010,logistique,true,true,false
+Kenza D.,kenza@neighborlink.test,+237690000011,accueil|distribution,true,true,true
+Lionel W.,boris@neighborlink.test,+237690000012,conduite,true,true,false

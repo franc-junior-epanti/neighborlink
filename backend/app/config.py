@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_version: str = "0.1.0"
     database_url: str = "postgresql+psycopg://neighborlink:neighborlink@localhost:55432/neighborlink"
+    aws_region: str = "eu-west-1"
+    cognito_user_pool_id: str = ""
+    cognito_app_client_id: str = ""
+    auth_mode: str = "cognito"
+    frontend_origin: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
