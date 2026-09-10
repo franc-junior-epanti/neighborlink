@@ -9,6 +9,7 @@ description = "NeighborLink FastAPI control plane"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.14,<2",
+  "bedrock-agentcore>=1,<2",
   "fastapi>=0.115,<1",
   "ortools>=9.12,<10",
   "psycopg[binary]>=3.2,<4",

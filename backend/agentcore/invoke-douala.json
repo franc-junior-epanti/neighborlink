@@ -1,0 +1,37 @@
+{
+  "request_id": "1d8c72ef-8f37-4edb-a918-57c125111507",
+  "session_id": "82a2cb55-70a1-44ca-a44f-a2c657355dd0",
+  "organization_id": "00000000-0000-0000-0000-000000000001",
+  "operation_snapshot": {
+    "volunteers": [
+      {
+        "id": "amina",
+        "display_name": "Amina",
+        "skills": ["distribution"],
+        "availability": [
+          {
+            "starts_at": "2026-09-20T08:00:00Z",
+            "ends_at": "2026-09-20T12:00:00Z"
+          }
+        ],
+        "preferred_roles": ["Distribution"],
+        "latitude": 4.0511,
+        "longitude": 9.7679
+      }
+    ],
+    "shifts": [
+      {
+        "id": "distribution-matin",
+        "name": "Distribution du matin",
+        "role_name": "Distribution",
+        "required_skill": "distribution",
+        "starts_at": "2026-09-20T08:00:00Z",
+        "ends_at": "2026-09-20T10:00:00Z",
+        "capacity": 1,
+        "latitude": 4.0483,
+        "longitude": 9.7043
+      }
+    ]
+  },
+  "instruction": "Prépare un planning valide pour l'opération de Douala."
+}

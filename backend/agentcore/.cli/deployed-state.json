@@ -1,0 +1,17 @@
+{
+  "targets": {
+    "default": {
+      "resources": {
+        "runtimes": {
+          "NeighborLinkRuntime": {
+            "runtimeId": "NeighborLinkAgent_NeighborLinkRuntime-aAxOlG8y5S",
+            "runtimeArn": "arn:aws:bedrock-agentcore:us-east-1:549837243503:runtime/NeighborLinkAgent_NeighborLinkRuntime-aAxOlG8y5S",
+            "roleArn": "arn:aws:iam::549837243503:role/AgentCore-NeighborLinkAge-ApplicationAgentNeighborL-b5kS4sYx3FOL"
+          }
+        },
+        "stackName": "AgentCore-NeighborLinkAgent-default",
+        "deployHash": "dd1bec3610836187"
+      }
+    }
+  }
+}

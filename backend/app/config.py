@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     cognito_app_client_id: str = ""
     auth_mode: str = "cognito"
     frontend_origin: str = "http://localhost:5173"
+    agent_runtime_mode: str = "local"
+    agent_runtime_arn: str = ""
+    agent_runtime_qualifier: str = "DEFAULT"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
