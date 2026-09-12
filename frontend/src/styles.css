@@ -5,6 +5,58 @@
   font-synthesis: none;
 }
 
+.schedule-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #d8d0c2;
+  border-radius: 18px;
+  background: #fffdf8;
+}
+
+.compact-field { min-width: 15rem; }
+.compact-field select, .agent-command input, .manual-move select {
+  width: 100%;
+  margin-top: .45rem;
+  padding: .8rem;
+  border: 1px solid #afbdc9;
+  border-radius: 10px;
+  background: white;
+}
+
+.agent-command, .manual-move {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 1rem;
+  margin: 1.4rem 0;
+}
+
+.version-tabs { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
+.version-tabs button { padding: .65rem .9rem; }
+.active-version { background: #178c73; }
+.secondary-button { background: #e8ecea; color: #143453; border-color: #b8c3c0; }
+
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin: 1.2rem 0; }
+.metrics span { padding: 1rem; border-radius: 12px; background: #eef4f1; }
+.metrics strong { display: block; font-size: 1.35rem; }
+.schedule-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; }
+.assignment { display: grid; grid-template-columns: 1fr 1fr; gap: .25rem 1rem; padding: .8rem 0; border-bottom: 1px solid #ddd5c8; }
+.assignment small { grid-column: 1 / -1; color: #537066; }
+.manual-move { grid-template-columns: 1fr 1fr auto; padding-top: 1rem; }
+.manual-move h3 { grid-column: 1 / -1; margin-bottom: 0; }
+.diff-panel { margin-top: 1rem; padding: 1rem; border-left: 4px solid #efad3c; background: #fff7e6; }
+.diff-added { color: #13725f; }
+.diff-removed { color: #a13c32; }
+.journal-panel { margin-top: 1rem; padding: 1rem; border-left: 4px solid #3c7ef0; background: #eef4ff; }
+.journal-panel ol { margin: .5rem 0 0; padding-left: 1.2rem; }
+.journal-panel li { padding: .15rem 0; }
+
+@media (max-width: 760px) {
+  .metrics, .schedule-grid { grid-template-columns: 1fr; }
+  .agent-command, .manual-move { grid-template-columns: 1fr; }
+  .manual-move h3 { grid-column: 1; }
+}
+
 body {
   margin: 0;
   min-width: 320px;

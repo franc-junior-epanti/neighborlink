@@ -3,17 +3,20 @@ import { fetchSession, type Session } from "./api/session";
 import { SignIn } from "./auth/SignIn";
 import { useAuth } from "./auth/AuthContext";
 import { ImportVolunteers } from "./ImportVolunteers";
+import { ScheduleBoard } from "./ScheduleBoard";
 
 export function App() {
   const { ready, authenticated, username, getAccessToken, signOut } = useAuth();
   const [session, setSession] = useState<Session | null>(null);
   const [activeOrganizationId, setActiveOrganizationId] = useState("");
+  const [preferredOperationId, setPreferredOperationId] = useState("");
   const [sessionError, setSessionError] = useState("");
 
   useEffect(() => {
     if (!authenticated) {
       setSession(null);
       setActiveOrganizationId("");
+      setPreferredOperationId("");
       return;
     }
     getAccessToken()
@@ -47,6 +50,7 @@ export function App() {
             value={activeOrganizationId}
             onChange={(event) => {
               setActiveOrganizationId(event.target.value);
+              setPreferredOperationId("");
               setSessionError("");
             }}
           >
@@ -64,6 +68,14 @@ export function App() {
       {activeOrganizationId && (
         <ImportVolunteers
           organizationId={activeOrganizationId}
+          getAccessToken={getAccessToken}
+          onDemoLoaded={setPreferredOperationId}
+        />
+      )}
+      {activeOrganizationId && (
+        <ScheduleBoard
+          organizationId={activeOrganizationId}
+          preferredOperationId={preferredOperationId}
           getAccessToken={getAccessToken}
         />
       )}

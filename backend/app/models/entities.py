@@ -179,6 +179,9 @@ class ScheduleVersion(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     score_details: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     conflicts: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     explanations: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    agent_session_id: Mapped[str | None] = mapped_column(String(64))
+    agent_request_id: Mapped[str | None] = mapped_column(String(64))
+    tool_calls: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     approved_by_user_id: Mapped[UUID | None] = mapped_column(Uuid, ForeignKey("users.id"))
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

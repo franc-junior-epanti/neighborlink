@@ -8,9 +8,13 @@ import {
   type ImportRow,
 } from "./api/imports";
 
-type Props = { organizationId: string; getAccessToken: () => Promise<string> };
+type Props = {
+  organizationId: string;
+  getAccessToken: () => Promise<string>;
+  onDemoLoaded?: (operationId: string) => void;
+};
 
-export function ImportVolunteers({ organizationId, getAccessToken }: Props) {
+export function ImportVolunteers({ organizationId, getAccessToken, onDemoLoaded }: Props) {
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -60,6 +64,7 @@ export function ImportVolunteers({ organizationId, getAccessToken }: Props) {
           onClick={() => void run(async (token) => {
             const result = await loadDemo(organizationId, token);
             setMessage(`${result.volunteers} bénévoles et ${result.roles.length} rôles sont prêts.`);
+            onDemoLoaded?.(result.operation_id);
           })}
         >
           Charger le scénario Douala
