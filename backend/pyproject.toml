@@ -11,6 +11,7 @@ dependencies = [
   "alembic>=1.14,<2",
   "bedrock-agentcore>=1,<2",
   "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
   "ortools>=9.12,<10",
   "psycopg[binary]>=3.2,<4",
   "pyjwt[crypto]>=2.10,<3",
@@ -23,7 +24,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "httpx>=0.28,<1",
   "pytest>=8.3,<9",
   "pytest-cov>=6,<7",
   "ruff>=0.9,<1"

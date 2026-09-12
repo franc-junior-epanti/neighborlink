@@ -173,8 +173,11 @@ def test_dispatch_reports_partial_failure(publishing_context) -> None:
             self.calls += 1
             return self.calls > 1
 
-    def failing_dispatch(db_session, version_id, adapter=None):
-        return dispatch_pending(db_session, version_id, adapter=FlakyAdapter())
+    def failing_dispatch(db_session, version_id, registry=None):
+        flaky = FlakyAdapter()
+        return dispatch_pending(
+            db_session, version_id, registry={"email": flaky, "whatsapp": flaky}
+        )
 
     original = publishing_api.dispatch_pending
     publishing_api.dispatch_pending = failing_dispatch

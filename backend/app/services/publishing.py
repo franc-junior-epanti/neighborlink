@@ -1,10 +1,11 @@
 from datetime import UTC, datetime
-from typing import Protocol
 from uuid import UUID
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
+from app.integrations.notifications import NotificationAdapter, SimulatedAdapter, build_registry
 from app.models import (
     Assignment,
     AuditEvent,
@@ -14,17 +15,32 @@ from app.models import (
     Volunteer,
 )
 from app.schemas.publishing import NotificationPreviewItem, OutboxStatusView
+from app.services.responses import sign_response_token
 
 
 class PublishConflict(ValueError):
     """Raised when a schedule version cannot be published as requested."""
 
 
-def _render_message(volunteer: Volunteer, shift: Shift, version: ScheduleVersion) -> str:
+def _response_links(assignment_id: UUID) -> tuple[str, str]:
+    settings = get_settings()
+    base = settings.public_api_base_url.rstrip("/")
+    confirm = sign_response_token(settings.response_signing_secret, assignment_id, "confirm")
+    decline = sign_response_token(settings.response_signing_secret, assignment_id, "decline")
+    return (
+        f"{base}/api/v1/public/responses/{confirm}",
+        f"{base}/api/v1/public/responses/{decline}",
+    )
+
+
+def _render_message(volunteer: Volunteer, shift: Shift, version: ScheduleVersion, assignment_id: UUID) -> str:
+    confirm_url, decline_url = _response_links(assignment_id)
     return (
         f"Bonjour {volunteer.display_name}, vous êtes proposé(e) pour \"{shift.name}\" "
         f"le {shift.starts_at:%d/%m/%Y} de {shift.starts_at:%H:%M} à {shift.ends_at:%H:%M} "
-        f"(planning v{version.revision})."
+        f"(planning v{version.revision}).\n"
+        f"Confirmer : {confirm_url}\n"
+        f"Décliner : {decline_url}"
     )
 
 
@@ -57,7 +73,7 @@ def preview_notifications(db: Session, version: ScheduleVersion) -> list[Notific
                 volunteer_name=volunteer.display_name,
                 channel=picked[0] if picked else None,
                 recipient=picked[1] if picked else None,
-                content=_render_message(volunteer, shift, version),
+                content=_render_message(volunteer, shift, version, assignment.id),
                 blocked_reason=None if picked else "Aucun canal consenti par le bénévole.",
             )
         )
@@ -78,12 +94,18 @@ def _to_status_view(row: NotificationOutbox) -> OutboxStatusView:
 
 
 def publish_version(
-    db: Session, version: ScheduleVersion, expected_revision: int, actor_id: UUID
+    db: Session,
+    version: ScheduleVersion,
+    expected_revision: int,
+    actor_id: UUID,
+    registry: dict[str, NotificationAdapter] | None = None,
 ) -> tuple[ScheduleVersion, list[OutboxStatusView]]:
     if version.revision != expected_revision:
         raise PublishConflict("Cette version a changé depuis votre dernière lecture ; rechargez.")
     if version.status != "draft":
         raise PublishConflict("Cette version n'est plus un brouillon publiable.")
+
+    registry = registry or build_registry(get_settings())
 
     db.execute(
         update(ScheduleVersion)
@@ -113,14 +135,15 @@ def publish_version(
         if existing is not None:
             created.append(existing)
             continue
+        mode = "simulated" if isinstance(registry.get(channel), SimulatedAdapter) else "real"
         row = NotificationOutbox(
             organization_id=version.organization_id,
             schedule_version_id=version.id,
             assignment_id=assignment.id,
             channel=channel,
             recipient=recipient,
-            rendered_content=_render_message(volunteer, shift, version),
-            mode="simulated",
+            rendered_content=_render_message(volunteer, shift, version, assignment.id),
+            mode=mode,
             status="pending",
             idempotency_key=idempotency_key,
         )
@@ -143,21 +166,10 @@ def publish_version(
     return version, [_to_status_view(row) for row in created]
 
 
-class NotificationAdapter(Protocol):
-    def send(self, outbox: NotificationOutbox) -> bool: ...
-
-
-class SimulatedAdapter:
-    """Default adapter used until real Gmail/WhatsApp credentials are configured."""
-
-    def send(self, outbox: NotificationOutbox) -> bool:
-        return True
-
-
 def dispatch_pending(
-    db: Session, version_id: UUID, adapter: NotificationAdapter | None = None
+    db: Session, version_id: UUID, registry: dict[str, NotificationAdapter] | None = None
 ) -> list[OutboxStatusView]:
-    adapter = adapter or SimulatedAdapter()
+    registry = registry or build_registry(get_settings())
     rows = list(
         db.scalars(
             select(NotificationOutbox).where(
@@ -167,6 +179,7 @@ def dispatch_pending(
         )
     )
     for row in rows:
+        adapter = registry.get(row.channel, SimulatedAdapter())
         row.attempt_count += 1
         try:
             ok = adapter.send(row)
