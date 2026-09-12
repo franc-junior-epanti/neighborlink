@@ -70,6 +70,7 @@ class ScheduleVersionDetail(ScheduleVersionSummary):
     agent_session_id: str | None = None
     agent_request_id: str | None = None
     tool_calls: list[ToolCallView] = Field(default_factory=list)
+    approved_at: datetime | None = None
 
 
 class ScheduleDiff(BaseModel):

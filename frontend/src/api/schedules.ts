@@ -53,6 +53,7 @@ export type VersionDetail = VersionSummary & {
   agent_session_id: string | null;
   agent_request_id: string | null;
   tool_calls: ToolCall[];
+  approved_at: string | null;
 };
 
 export type VersionDiff = {
@@ -60,6 +61,24 @@ export type VersionDiff = {
   target_version_id: string;
   added: string[];
   removed: string[];
+};
+
+export type OutboxStatus = {
+  id: string;
+  assignment_id: string;
+  channel: string;
+  recipient: string;
+  mode: string;
+  status: string;
+  attempt_count: number;
+  last_error: string | null;
+};
+
+export type PublishResult = {
+  schedule_version_id: string;
+  status: string;
+  approved_at: string | null;
+  notifications: OutboxStatus[];
 };
 
 const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
@@ -116,4 +135,22 @@ export async function moveVolunteer(
 
 export async function fetchDiff(versionId: string, token: string) {
   return (await request(`/api/v1/schedule-versions/${versionId}/diff`, token)).json() as Promise<VersionDiff>;
+}
+
+export async function publishVersion(versionId: string, expectedRevision: number, token: string) {
+  return (await request(`/api/v1/schedule-versions/${versionId}/publish`, token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ expected_revision: expectedRevision }),
+  })).json() as Promise<PublishResult>;
+}
+
+export async function dispatchNotifications(versionId: string, token: string) {
+  return (await request(`/api/v1/schedule-versions/${versionId}/notifications/dispatch`, token, {
+    method: "POST",
+  })).json() as Promise<{ notifications: OutboxStatus[] }>;
+}
+
+export async function fetchOutboxStatus(versionId: string, token: string) {
+  return (await request(`/api/v1/schedule-versions/${versionId}/notifications`, token)).json() as Promise<OutboxStatus[]>;
 }

@@ -43,6 +43,7 @@ const firstVersion = {
     { tool: "validate_plan", status: "completed", timestamp: "2026-09-11T12:00:02Z" },
     { tool: "explain_plan", status: "completed", timestamp: "2026-09-11T12:00:03Z" },
   ],
+  approved_at: null,
 };
 
 describe("ScheduleBoard", () => {
@@ -92,5 +93,50 @@ describe("ScheduleBoard", () => {
       "Privilégie les bénévoles disponibles",
       "token",
     ));
+  });
+
+  it("publie une version brouillon puis affiche l’outbox après envoi", async () => {
+    const published = {
+      ...firstVersion,
+      status: "published",
+      approved_at: "2026-09-12T09:00:00Z",
+    };
+    const outboxItem = {
+      id: "outbox-1",
+      assignment_id: "assignment-1",
+      channel: "email",
+      recipient: "amina@example.dev",
+      mode: "simulated",
+      status: "pending",
+      attempt_count: 0,
+      last_error: null,
+    };
+    vi.mocked(schedules.publishVersion).mockResolvedValue({
+      schedule_version_id: "version-1",
+      status: "published",
+      approved_at: "2026-09-12T09:00:00Z",
+      notifications: [outboxItem],
+    });
+    vi.mocked(schedules.fetchVersion).mockResolvedValueOnce(firstVersion).mockResolvedValue(published);
+    vi.mocked(schedules.fetchOutboxStatus).mockResolvedValue([outboxItem]);
+    vi.mocked(schedules.dispatchNotifications).mockResolvedValue({
+      notifications: [{ ...outboxItem, status: "simulated", attempt_count: 1 }],
+    });
+
+    render(
+      <ScheduleBoard
+        organizationId="organization-1"
+        getAccessToken={async () => "token"}
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Publier V1" }));
+
+    await waitFor(() => expect(schedules.publishVersion).toHaveBeenCalledWith("version-1", 1, "token"));
+    expect(await screen.findByText(/amina@example.dev/)).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Envoyer les notifications" }));
+    await waitFor(() => expect(schedules.dispatchNotifications).toHaveBeenCalledWith("version-1", "token"));
+    expect(await screen.findByText(/simulated/)).toBeInTheDocument();
   });
 });

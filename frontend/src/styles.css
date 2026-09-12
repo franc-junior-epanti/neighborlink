@@ -50,6 +50,9 @@
 .journal-panel { margin-top: 1rem; padding: 1rem; border-left: 4px solid #3c7ef0; background: #eef4ff; }
 .journal-panel ol { margin: .5rem 0 0; padding-left: 1.2rem; }
 .journal-panel li { padding: .15rem 0; }
+.publish-panel { margin-top: 1rem; padding: 1rem; border-left: 4px solid #178c73; background: #eef7f4; }
+.outbox-list { margin: .75rem 0 0; padding-left: 1.2rem; }
+.outbox-list li { padding: .15rem 0; }
 
 @media (max-width: 760px) {
   .metrics, .schedule-grid { grid-template-columns: 1fr; }

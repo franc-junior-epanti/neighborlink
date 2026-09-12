@@ -232,6 +232,7 @@ def version_detail(db: Session, version: ScheduleVersion) -> ScheduleVersionDeta
         agent_session_id=version.agent_session_id,
         agent_request_id=version.agent_request_id,
         tool_calls=[ToolCallView(**call) for call in version.tool_calls],
+        approved_at=version.approved_at,
         assignments=[
             AssignmentView(
                 id=assignment.id,

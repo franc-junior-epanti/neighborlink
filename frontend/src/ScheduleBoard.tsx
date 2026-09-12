@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  dispatchNotifications,
   fetchDiff,
   fetchOperations,
+  fetchOutboxStatus,
   fetchVersion,
   fetchVersions,
   generateVersion,
   moveVolunteer,
+  publishVersion,
+  type OutboxStatus,
   type Operation,
   type VersionDetail,
   type VersionDiff,
@@ -29,6 +33,7 @@ export function ScheduleBoard({ organizationId, preferredOperationId, getAccessT
   const [targetShiftId, setTargetShiftId] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [outbox, setOutbox] = useState<OutboxStatus[]>([]);
 
   const loadVersions = useCallback(async (targetOperationId: string, preferredVersionId?: string) => {
     if (!targetOperationId) return;
@@ -39,6 +44,7 @@ export function ScheduleBoard({ organizationId, preferredOperationId, getAccessT
     if (!versionId) {
       setSelected(null);
       setDiff(null);
+      setOutbox([]);
       return;
     }
     const detail = await fetchVersion(targetOperationId, versionId, token);
@@ -46,6 +52,7 @@ export function ScheduleBoard({ organizationId, preferredOperationId, getAccessT
     setAssignmentId(detail.assignments[0]?.id ?? "");
     setTargetShiftId(detail.assignments[0]?.shift_id ?? detail.shifts[0]?.id ?? "");
     setDiff(detail.revision > 1 ? await fetchDiff(detail.id, token) : null);
+    setOutbox(detail.status === "published" ? await fetchOutboxStatus(detail.id, token) : []);
   }, [getAccessToken]);
 
   useEffect(() => {
@@ -77,6 +84,37 @@ export function ScheduleBoard({ organizationId, preferredOperationId, getAccessT
   }
 
   const assignment = selected?.assignments.find((item) => item.id === assignmentId);
+
+  async function handlePublish() {
+    if (!selected) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const token = await getAccessToken();
+      const result = await publishVersion(selected.id, selected.revision, token);
+      setOutbox(result.notifications);
+      await loadVersions(selected.operation_id, selected.id);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Publication impossible");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDispatch() {
+    if (!selected) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const token = await getAccessToken();
+      const result = await dispatchNotifications(selected.id, token);
+      setOutbox(result.notifications);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Envoi impossible");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <section className="schedule-card">
@@ -202,6 +240,35 @@ export function ScheduleBoard({ organizationId, preferredOperationId, getAccessT
               </ol>
             </div>
           )}
+
+          <div className="publish-panel">
+            <h3>Approbation et publication</h3>
+            {selected.status === "draft" && (
+              <button disabled={busy} type="button" onClick={() => void handlePublish()}>
+                Publier V{selected.revision}
+              </button>
+            )}
+            {selected.status === "published" && (
+              <>
+                <p className="notice">Version publiée{selected.approved_at ? ` le ${new Date(selected.approved_at).toLocaleString()}` : ""}.</p>
+                <button disabled={busy} type="button" onClick={() => void handleDispatch()}>
+                  Envoyer les notifications
+                </button>
+              </>
+            )}
+            {selected.status === "superseded" && <p className="notice">Version remplacée par une publication plus récente.</p>}
+            {outbox.length > 0 && (
+              <ul className="outbox-list">
+                {outbox.map((item) => (
+                  <li key={item.id}>
+                    <strong>{item.channel}</strong> → {item.recipient} — {item.status}
+                    {item.attempt_count > 0 && <small> ({item.attempt_count} tentative{item.attempt_count > 1 ? "s" : ""})</small>}
+                    {item.last_error && <small className="error"> {item.last_error}</small>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {diff && (
             <div className="diff-panel">
