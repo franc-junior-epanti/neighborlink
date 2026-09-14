@@ -1,4 +1,6 @@
 .env
+.env.production
+.env.local
 .venv/
 __pycache__/
 .pytest_cache/
@@ -10,3 +12,5 @@ dist/
 coverage/
 .DS_Store
 *.tsbuildinfo
+*.zip
+
