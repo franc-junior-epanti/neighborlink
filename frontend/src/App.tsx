@@ -37,7 +37,7 @@ export function App() {
     <main className="shell app-shell">
       <p className="eyebrow">NeighborLink</p>
       <h1>Coordinate people. Strengthen communities.</h1>
-      <p className="session-line">Connecté en tant que {username}</p>
+      <p className="session-line">Connecté en tant que {session?.email ?? username}</p>
       {sessionError && <p role="alert">{sessionError}</p>}
       {session && session.organizations.length > 0 && (
         <label className="organization-picker">
