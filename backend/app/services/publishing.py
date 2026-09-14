@@ -45,10 +45,10 @@ def _render_message(volunteer: Volunteer, shift: Shift, version: ScheduleVersion
 
 
 def _choose_channel(volunteer: Volunteer) -> tuple[str, str] | None:
+    # WhatsApp channel selection is temporarily disabled (email-only for the hackathon
+    # deadline); the WhatsApp adapter/integration code stays in place for later reactivation.
     if volunteer.email_consent and volunteer.email:
         return "email", volunteer.email
-    if volunteer.whatsapp_consent and volunteer.phone_e164:
-        return "whatsapp", volunteer.phone_e164
     return None
 
 
