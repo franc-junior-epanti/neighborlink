@@ -98,6 +98,12 @@ h1 {
   font-weight: 700;
 }
 
+.session-line {
+  margin-top: 20px;
+  color: #5a6472;
+  font-size: 0.95rem;
+}
+
 .auth-shell {
   max-width: 520px;
 }
