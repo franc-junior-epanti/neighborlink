@@ -1,4 +1,5 @@
 import base64
+import smtplib
 import time
 from email.mime.text import MIMEText
 from typing import TYPE_CHECKING, Protocol
@@ -71,6 +72,27 @@ class GmailAdapter:
         return response.status_code < 300
 
 
+class SmtpAdapter:
+    """Sends real email through an SMTP server using a username/password (e.g. Gmail app password)."""
+
+    def __init__(self, host: str, port: int, user: str, password: str) -> None:
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+
+    def send(self, outbox: "NotificationOutbox") -> bool:
+        message = MIMEText(outbox.rendered_content)
+        message["to"] = outbox.recipient
+        message["from"] = self.user
+        message["subject"] = "NeighborLink — votre affectation"
+        with smtplib.SMTP(self.host, self.port, timeout=10) as server:
+            server.starttls()
+            server.login(self.user, self.password)
+            server.sendmail(self.user, [outbox.recipient], message.as_string())
+        return True
+
+
 class InfobipWhatsAppAdapter:
     """Sends real WhatsApp messages through the Infobip WhatsApp API."""
 
@@ -102,7 +124,14 @@ def build_registry(settings: Settings) -> dict[str, NotificationAdapter]:
         "email": SimulatedAdapter(),
         "whatsapp": SimulatedAdapter(),
     }
-    if all([settings.gmail_client_id, settings.gmail_client_secret, settings.gmail_refresh_token, settings.gmail_sender_email]):
+    if all([settings.smtp_host, settings.smtp_port, settings.smtp_user, settings.smtp_pass]):
+        registry["email"] = SmtpAdapter(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.smtp_user,
+            settings.smtp_pass,
+        )
+    elif all([settings.gmail_client_id, settings.gmail_client_secret, settings.gmail_refresh_token, settings.gmail_sender_email]):
         registry["email"] = GmailAdapter(
             settings.gmail_client_id,
             settings.gmail_client_secret,

@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     gmail_client_secret: str = ""
     gmail_refresh_token: str = ""
     gmail_sender_email: str = ""
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
     infobip_base_url: str = ""
     infobip_api_key: str = ""
     infobip_whatsapp_sender: str = ""
