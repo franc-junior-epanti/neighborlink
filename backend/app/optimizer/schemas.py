@@ -45,6 +45,7 @@ class ShiftInput(BaseModel):
 class ScheduleInput(BaseModel):
     volunteers: list[VolunteerInput]
     shifts: list[ShiftInput]
+    proximity_weight_multiplier: float = Field(default=1.0, ge=1.0, le=5.0)
 
 
 class AssignmentResult(BaseModel):

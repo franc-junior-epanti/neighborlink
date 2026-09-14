@@ -1,10 +1,10 @@
 from bedrock_agentcore import BedrockAgentCoreApp
 
 from agent.contracts import AgentRequest
-from agent.neighborlink import LocalNeighborLinkWorkflow
+from agent.neighborlink import LocalNeighborLinkWorkflow, StrandsInstructionInterpreter
 
 app = BedrockAgentCoreApp()
-workflow = LocalNeighborLinkWorkflow()
+workflow = LocalNeighborLinkWorkflow(interpreter=StrandsInstructionInterpreter())
 
 
 @app.entrypoint

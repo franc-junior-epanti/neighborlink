@@ -100,3 +100,26 @@ def test_preference_breaks_tie_after_hard_constraints() -> None:
     )
     assert result.assignments[0].volunteer_id == "b"
     assert "preferred_role" in result.assignments[0].reason_codes
+
+
+def test_proximity_weight_multiplier_scales_proximity_score_deterministically() -> None:
+    close_volunteer = volunteer("a")
+    close_volunteer.latitude = 0.0
+    close_volunteer.longitude = 0.0
+    close_shift = shift("s")
+    close_shift.latitude = 0.05
+    close_shift.longitude = 0.0
+
+    baseline = optimize_schedule(
+        ScheduleInput(volunteers=[close_volunteer], shifts=[close_shift], proximity_weight_multiplier=1.0)
+    )
+    boosted = optimize_schedule(
+        ScheduleInput(volunteers=[close_volunteer], shifts=[close_shift], proximity_weight_multiplier=3.0)
+    )
+    repeat_boosted = optimize_schedule(
+        ScheduleInput(volunteers=[close_volunteer], shifts=[close_shift], proximity_weight_multiplier=3.0)
+    )
+
+    assert boosted.score["proximity"] > baseline.score["proximity"]
+    assert boosted.score["proximity"] == repeat_boosted.score["proximity"]
+    assert boosted.score["proximity"] == round(baseline.score["proximity"] * 3)

@@ -64,7 +64,9 @@ def optimize_schedule(payload: ScheduleInput) -> ScheduleResult:
             preferred = _normalized(shift.role_name) in {
                 _normalized(role) for role in volunteer.preferred_roles
             }
-            proximity = proximity_points(_distance(volunteer, shift))
+            proximity = round(
+                proximity_points(_distance(volunteer, shift)) * payload.proximity_weight_multiplier
+            )
             tie_break = len(volunteers) - volunteer_index
             objective_terms.append(
                 variable
@@ -136,7 +138,7 @@ def optimize_schedule(payload: ScheduleInput) -> ScheduleResult:
                 preference_score += PREFERENCE_WEIGHT
             if distance is not None:
                 reasons.append("proximity")
-                proximity_score += proximity_points(distance)
+                proximity_score += round(proximity_points(distance) * payload.proximity_weight_multiplier)
             results.append(
                 AssignmentResult(
                     volunteer_id=volunteer.id,

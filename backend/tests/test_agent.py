@@ -1,7 +1,12 @@
 from datetime import UTC, datetime, timedelta
 
 from agent.contracts import AgentRequest
-from agent.neighborlink import LocalNeighborLinkWorkflow, build_strands_agent
+from agent.neighborlink import (
+    InstructionDecision,
+    LocalNeighborLinkWorkflow,
+    RegexInstructionInterpreter,
+    build_strands_agent,
+)
 from agent.tools.validate_plan import run_validation
 from app.optimizer import AvailabilityInput, ScheduleInput, ShiftInput, VolunteerInput
 
@@ -85,3 +90,31 @@ def test_strands_agent_exposes_only_three_safe_tools() -> None:
     # Construction is enough here: no external model invocation during unit tests.
     agent = build_strands_agent()
     assert set(agent.tool_names) == {"optimize_schedule", "validate_plan", "explain_plan"}
+
+
+def test_regex_interpreter_detects_proximity_preference() -> None:
+    decision = RegexInstructionInterpreter().interpret("Privilégie les bénévoles proches du site")
+    assert decision.needs_clarification is False
+    assert decision.proximity_weight_multiplier == 3.0
+
+
+def test_regex_interpreter_defaults_to_neutral_weight() -> None:
+    decision = RegexInstructionInterpreter().interpret("Garde le planning tel quel")
+    assert decision.proximity_weight_multiplier == 1.0
+
+
+def test_workflow_forwards_proximity_multiplier_to_optimizer() -> None:
+    result = LocalNeighborLinkWorkflow().run(request("Privilégie les bénévoles proches"))
+    assert result.status == "proposal"
+    assert result.tool_calls[0].tool == "optimize_schedule"
+
+
+class _RaisingInterpreter:
+    def interpret(self, instruction: str | None) -> InstructionDecision:
+        raise RuntimeError("modèle indisponible")
+
+
+def test_workflow_falls_back_to_regex_when_interpreter_fails() -> None:
+    result = LocalNeighborLinkWorkflow(interpreter=_RaisingInterpreter()).run(request())
+    assert result.status == "proposal"
+    assert result.schedule is not None
